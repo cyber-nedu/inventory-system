@@ -24,6 +24,8 @@ export const metadata: Metadata = {
   description: "Smart transportation management for better operations.",
 };
 
+const publicRoutes = ["/", "/about", "/how-it-works", "/contacts"];
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -32,20 +34,15 @@ export default async function RootLayout({
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "/";
 
-  const publicPage = () => {
-    return (
-      !pathname.startsWith("/auth") &&
-      !pathname.startsWith("/workspace")
-    );
-  };
+  const showLayout = publicRoutes.includes(pathname);
 
   return (
     <html lang="en" className={cn("font-sans", spaceGrotesk.variable)}>
       <body className={poppins.variable}>
-        {publicPage() && <Navbar />}
+        {showLayout && <Navbar />}
         <ScrollReveal />
         {children}
-        {publicPage() && <Footer />}
+        {showLayout && <Footer />}
       </body>
     </html>
   );
