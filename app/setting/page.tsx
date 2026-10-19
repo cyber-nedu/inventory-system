@@ -1,4 +1,4 @@
-function Settings() {
+function Setting() {
     return (
         <main>
             This is the settings page
@@ -6,4 +6,4 @@ function Settings() {
     )
 }
 
-export default Settings;
+export default Setting;
