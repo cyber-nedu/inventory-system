@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KYYP
+
+KYYP is a transportation management platform designed to help transportation businesses manage their operations and teams from one centralized system.
+
+## Tech Stack
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Supabase
+- PostgreSQL
+- Git & GitHub
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd <project-folder>
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Environment Variables
+
+Create a `.env.local` file in the root of the project.
+
+Add the required Supabase variables:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+Do not commit `.env.local` or any credentials to the repository.
+
+### 4. Start the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The application will automatically update when changes are made.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Running the Project
 
-## Learn More
+Start the development server:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create a production build:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run build
+```
 
-## Deploy on Vercel
+Start the production server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run linting:
+
+```bash
+npm run lint
+```
+
+## Git Workflow
+
+Create a feature branch before working on a feature:
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+After making changes:
+
+```bash
+git add .
+git commit -m "Describe your changes"
+```
+
+Push the branch:
+
+```bash
+git push origin feature/your-feature-name
+```
+
+Avoid pushing directly to `main` unless specifically agreed by the team.
+
+## Team Development
+
+Before changing an existing feature:
+
+1. Understand the current implementation.
+2. Check the related database tables and relationships.
+3. Check existing Supabase RLS policies.
+4. Make the smallest required change.
+5. Test the change locally.
+6. Commit the changes clearly.
+
+For database changes, communicate schema changes with the frontend implementation so both sides remain synchronized.

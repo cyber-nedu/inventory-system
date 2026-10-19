@@ -4,11 +4,11 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   ArrowRight,
-  CirclePile,
   Mail,
   ShieldCheck,
 } from "lucide-react"
 import { createClient } from "@/app/lib/supabase/client"
+import Logo from "@/app/components/logo"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -16,6 +16,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [code, setCode] = useState("")
   const [showCode, setShowCode] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
 
@@ -101,21 +102,21 @@ export default function SignupPage() {
       return
     }
 
-    router.replace("/auth/password")
+    if (rememberMe) {
+      localStorage.setItem("kyyp_remember_me", "true")
+    } else {
+      localStorage.removeItem("kyyp_remember_me")
+    }
+
+    router.replace("/auth/create-password")
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-secondary px-4 py-8 sm:px-6 sm:py-10">
+    <main className="flex min-h-screen items-start justify-center bg-secondary px-4 pb-8 pt-32 sm:px-6 sm:pb-10 sm:pt-36 lg:pt-40">
       <div className="w-full max-w-[1440px]">
         <div className="mx-auto w-full max-w-[500px]">
-          <div className="mb-8 flex flex-col items-center text-center sm:mb-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-dark text-foreground shadow-lg shadow-primary-dark/10 sm:h-13 sm:w-13">
-              <CirclePile className="h-6 w-6 sm:h-6.5 sm:w-6.5" />
-            </div>
-
-            <div className="mt-4 text-3xl font-bold tracking-tight text-text sm:text-4xl">
-              KYYP<span className="text-primary-dark">.</span>
-            </div>
+          <div className="mb-8 flex justify-center sm:mb-10">
+            <Logo />
           </div>
 
           <div className="border border-border/70 bg-foreground/75 p-5 shadow-2xl shadow-text/5 backdrop-blur-xl sm:p-8 md:p-9">
@@ -176,6 +177,18 @@ export default function SignupPage() {
                   </div>
                 </fieldset>
 
+                <label className="flex cursor-pointer items-center gap-2.5 text-sm text-muted">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    disabled={loading}
+                    className="h-4 w-4 accent-primary-dark"
+                  />
+
+                  <span>Remember me</span>
+                </label>
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -208,6 +221,18 @@ export default function SignupPage() {
                     className="h-13 w-full bg-transparent px-4 text-center text-lg font-medium tracking-[0.3em] text-text outline-none placeholder:text-sm placeholder:font-normal placeholder:tracking-normal placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60 sm:h-14"
                   />
                 </fieldset>
+
+                <label className="flex cursor-pointer items-center justify-center gap-2.5 text-sm text-muted">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    disabled={loading}
+                    className="h-4 w-4 accent-primary-dark"
+                  />
+
+                  <span>Remember me</span>
+                </label>
 
                 <button
                   type="submit"
@@ -252,4 +277,3 @@ export default function SignupPage() {
     </main>
   )
 }
-

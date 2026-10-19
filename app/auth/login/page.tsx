@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   ArrowRight,
-  CirclePile,
   Eye,
   EyeOff,
   LockKeyhole,
@@ -12,6 +11,7 @@ import {
   ShieldCheck,
 } from "lucide-react"
 import { createClient } from "@/app/lib/supabase/client"
+import Logo from "@/app/components/logo"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -101,17 +101,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-secondary px-4 py-8 sm:px-6 sm:py-10">
+    <main className="flex min-h-screen items-start justify-center bg-secondary pt-10 ">
       <div className="w-full max-w-[1440px]">
         <div className="mx-auto w-full max-w-[500px]">
-          <div className="mb-8 flex flex-col items-center text-center sm:mb-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-dark text-foreground shadow-lg shadow-primary-dark/10 sm:h-13 sm:w-13">
-              <CirclePile className="h-6 w-6 sm:h-6.5 sm:w-6.5" />
-            </div>
-
-            <div className="mt-4 text-3xl font-bold tracking-tight text-text sm:text-4xl">
-              KYYP<span className="text-primary-dark">.</span>
-            </div>
+          <div className="mb-8 flex justify-center sm:mb-10">
+            <Logo />
           </div>
 
           <div className="border border-border/70 bg-foreground/75 p-5 shadow-2xl shadow-text/5 backdrop-blur-xl sm:p-8 md:p-9">
@@ -191,7 +185,7 @@ export default function LoginPage() {
               <div className="flex justify-end pt-1">
                 <button
                   type="button"
-                  onClick={() => router.push("/auth/password")}
+                  onClick={() => router.push("/auth/create-password")}
                   className="text-sm font-medium text-muted transition-colors hover:text-primary-dark"
                 >
                   Forgot password?

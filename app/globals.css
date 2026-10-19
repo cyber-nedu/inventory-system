@@ -46,8 +46,27 @@ body {
   animation: logo-marquee 32s linear infinite;
 }
 
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(45px);
+  transition:
+    opacity 800ms ease,
+    transform 800ms ease;
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-logo-marquee {
     animation: none;
+  }
+
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
