@@ -22,13 +22,24 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
 
-  const routeUser = async (userId: string) => {
+  const routeUser = async () => {
     const supabase = createClient()
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+
+    if (userError || !user) {
+      setMessage("Unable to verify your account. Please try again.")
+      setLoading(false)
+      return
+    }
 
     const { data: memberships, error: membershipError } = await supabase
       .from("organization_members")
       .select("organization_id")
-      .eq("user_id", userId)
+      .eq("user_id", user.id)
 
     if (membershipError) {
       setMessage(membershipError.message)
@@ -38,6 +49,11 @@ export default function LoginPage() {
 
     if (!memberships || memberships.length === 0) {
       router.replace("/workspace/create-workspace")
+      return
+    }
+
+    if (memberships.length === 1) {
+      router.replace("/dashboard")
       return
     }
 
@@ -69,12 +85,14 @@ export default function LoginPage() {
     })
 
     if (error || !data.user) {
-      setMessage(error?.message || "Unable to log in.")
+      setMessage(
+        error?.message || "The email or password you entered is incorrect."
+      )
       setLoading(false)
       return
     }
 
-    await routeUser(data.user.id)
+    await routeUser()
   }
 
   return (

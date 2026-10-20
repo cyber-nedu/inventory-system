@@ -3,10 +3,10 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/app/lib/supabase/server"
 
-export async function deleteWorkspace(formData: FormData) {
-  const workspaceId = formData.get("workspaceId")
+export async function deleteOrganization(formData: FormData) {
+  const organizationId = formData.get("organizationId")
 
-  if (typeof workspaceId !== "string" || !workspaceId) {
+  if (typeof organizationId !== "string" || !organizationId) {
     throw new Error("Invalid organization.")
   }
 
@@ -22,9 +22,9 @@ export async function deleteWorkspace(formData: FormData) {
   }
 
   const { error } = await supabase
-    .from("workspaces")
+    .from("organizations")
     .delete()
-    .eq("id", workspaceId)
+    .eq("id", organizationId)
     .eq("owner_id", user.id)
 
   if (error) {

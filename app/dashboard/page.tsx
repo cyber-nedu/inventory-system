@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/app/lib/supabase/client"
+import Sidebar from "@/app/components/organizationSidebar"
 
 type Organization = {
   id: string
@@ -16,8 +17,7 @@ type OrganizationMember = {
 }
 
 export default function DashboardPage() {
-  const searchParams = useSearchParams()
-  const organizationId = searchParams.get("organization")
+  const router = useRouter()
 
   const [organization, setOrganization] =
     useState<Organization | null>(null)
@@ -54,27 +54,16 @@ export default function DashboardPage() {
       }
 
       if (!memberships || memberships.length === 0) {
-        window.location.href = "/workspace/create-workspace"
+        router.push("/workspace/create-workspace")
         return
       }
 
-      const selectedMembership = organizationId
-        ? memberships.find(
-            (membership: OrganizationMember) =>
-              membership.organization_id === organizationId
-          )
-        : memberships[0]
-
-      if (!selectedMembership) {
-        setMessage("You do not have access to this organization.")
-        setLoading(false)
-        return
-      }
+      const membership = memberships[0] as OrganizationMember
 
       const { data, error } = await supabase
         .from("organizations")
         .select("id, name, owner_id")
-        .eq("id", selectedMembership.organization_id)
+        .eq("id", membership.organization_id)
         .single()
 
       if (error) {
@@ -84,44 +73,53 @@ export default function DashboardPage() {
       }
 
       setOrganization(data)
-      setRole(selectedMembership.role)
+      setRole(membership.role)
       setLoading(false)
     }
 
     loadOrganization()
-  }, [organizationId])
+  }, [router])
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-sm text-muted">Loading organization...</p>
+      <main>
+        <Sidebar />
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <p className="text-sm text-muted">Loading organization...</p>
+        </div>
       </main>
     )
   }
 
   if (message) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-5">
-        <p className="text-sm text-muted">{message}</p>
+      <main>
+        <div className="flex min-h-screen items-center justify-center bg-background px-5">
+          <p className="text-sm text-muted">{message}</p>
+        </div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-secondary p-6">
-      <div className="mx-auto max-w-6xl">
-        <div>
-          <p className="text-sm font-medium text-primary-dark">
-            Organization dashboard
-          </p>
+    <main>
+      <Sidebar />
 
-          <h1 className="mt-2 text-3xl font-semibold text-text">
-            {organization?.name}
-          </h1>
+      <div className="min-h-screen bg-secondary p-6 lg:ml-[260px]">
+        <div className="mx-auto max-w-6xl">
+          <div>
+            <p className="text-sm font-medium text-primary-dark">
+              Organization dashboard
+            </p>
 
-          <p className="mt-2 text-sm text-muted">
-            You are signed in as {role}.
-          </p>
+            <h1 className="mt-2 text-3xl font-semibold text-text">
+              {organization?.name}
+            </h1>
+
+            <p className="mt-2 text-sm text-muted">
+              You are signed in as {role}.
+            </p>
+          </div>
         </div>
       </div>
     </main>

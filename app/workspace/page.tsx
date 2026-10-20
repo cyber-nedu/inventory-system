@@ -2,6 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { Building2, ChevronRight } from "lucide-react"
 import { createClient } from "@/app/lib/supabase/server"
+import DeleteWorkspaceBtn from "./DeleteWorkspaceBtn"
 
 type Organization = {
   id: string
@@ -77,16 +78,18 @@ export default async function Workspace() {
 
         <div className="mt-8 space-y-3">
           {organizations.map((organization: Organization) => (
-            <Link
+            <div
               key={organization.id}
-              href={`/dashboard?organization=${organization.id}`}
               className="group flex items-center gap-4 border border-border bg-foreground p-4 transition-colors duration-200 hover:border-primary sm:p-5"
             >
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary-dark">
                 <Building2 className="h-5 w-5" />
               </div>
 
-              <div className="min-w-0 flex-1">
+              <Link
+                href={`/dashboard?organization=${organization.id}`}
+                className="min-w-0 flex-1"
+              >
                 <p className="truncate font-semibold text-text">
                   {organization.name}
                 </p>
@@ -96,12 +99,22 @@ export default async function Workspace() {
                     ? "Owner"
                     : "Organization member"}
                 </p>
-              </div>
+              </Link>
 
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center text-muted transition-colors duration-200 group-hover:text-primary-dark">
-                <ChevronRight className="h-5 w-5" />
+              <div className="flex shrink-0 items-center gap-4">
+                {organization.owner_id === user.id && (
+                  <DeleteWorkspaceBtn organizationId={organization.id} />
+                )}
+
+                <Link
+                  href={`/dashboard?organization=${organization.id}`}
+                  aria-label={`Continue to ${organization.name}`}
+                  className="flex h-9 w-9 items-center justify-center text-muted transition-colors duration-200 hover:text-primary-dark"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Link>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>

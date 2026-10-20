@@ -3,10 +3,10 @@
 import { useState } from "react"
 import { LoaderCircle, Trash2, X } from "lucide-react"
 import { useFormStatus } from "react-dom"
-import { deleteWorkspace } from "./action"
+import { deleteOrganization } from "./action"
 
 type DeleteWorkspaceBtnProps = {
-  workspaceId: string
+  organizationId: string
 }
 
 function DeleteButton() {
@@ -34,7 +34,7 @@ function DeleteButton() {
 }
 
 export default function DeleteWorkspaceBtn({
-  workspaceId,
+  organizationId,
 }: DeleteWorkspaceBtnProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -87,11 +87,11 @@ export default function DeleteWorkspaceBtn({
                 Cancel
               </button>
 
-              <form action={deleteWorkspace}>
+              <form action={deleteOrganization}>
                 <input
                   type="hidden"
-                  name="workspaceId"
-                  value={workspaceId}
+                  name="organizationId"
+                  value={organizationId}
                 />
 
                 <DeleteButton />
