@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation"
 import {
   ArrowRight,
   Building2,
-  CirclePile,
   LoaderCircle,
   ShieldCheck,
+  CirclePile,
 } from "lucide-react"
 import { createClient } from "@/app/lib/supabase/client"
 
@@ -60,12 +60,17 @@ export default function CreateWorkspacePage() {
       return
     }
 
+    console.log("Authenticated user:", user.id)
+    console.log("Organization payload:", {
+      name: trimmedOrganizationName,
+      owner_id: user.id,
+    })
+
     const { data: organization, error: organizationError } = await supabase
-      .from("workspaces")
+      .from("organizations")
       .insert({
         name: trimmedOrganizationName,
         owner_id: user.id,
-        type: "organization",
       })
       .select("id")
       .single()
@@ -79,15 +84,16 @@ export default function CreateWorkspacePage() {
     }
 
     const { error: memberError } = await supabase
-      .from("workspace_members")
+      .from("organization_members")
       .insert({
-        workspace_id: organization.id,
+        organization_id: organization.id,
         user_id: user.id,
+        role: "owner",
       })
 
     if (memberError) {
       await supabase
-        .from("workspaces")
+        .from("organizations")
         .delete()
         .eq("id", organization.id)
 

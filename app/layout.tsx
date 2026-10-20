@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Space_Grotesk } from "next/font/google";
-import { headers } from "next/headers";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import Navbar from "./components/navbar";
-import Footer from "./components/footer";
 import ScrollReveal from "./components/scroll-reveal";
 
 const spaceGrotesk = Space_Grotesk({
@@ -24,25 +21,17 @@ export const metadata: Metadata = {
   description: "Smart transportation management for better operations.",
 };
 
-const publicRoutes = ["/", "/about", "/how-it-works", "/contacts"];
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "/";
-
-  const showLayout = publicRoutes.includes(pathname);
-
   return (
     <html lang="en" className={cn("font-sans", spaceGrotesk.variable)}>
       <body className={poppins.variable}>
-        {showLayout && <Navbar />}
         <ScrollReveal />
         {children}
-        {showLayout && <Footer />}
+
       </body>
     </html>
   );

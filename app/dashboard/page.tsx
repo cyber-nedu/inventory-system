@@ -1,29 +1,34 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { createClient } from "@/app/lib/supabase/client"
 
-type Workspace = {
+type Organization = {
   id: string
   name: string
-  type: "personal" | "organization"
-  organization_type: string | null
   owner_id: string
 }
 
-type WorkspaceMember = {
-  workspace_id: string
+type OrganizationMember = {
+  organization_id: string
   role: "owner" | "admin" | "manager" | "staff"
 }
 
 export default function DashboardPage() {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
+  const searchParams = useSearchParams()
+  const organizationId = searchParams.get("organization")
+
+  const [organization, setOrganization] =
+    useState<Organization | null>(null)
+  const [role, setRole] = useState<
+    "owner" | "admin" | "manager" | "staff" | null
+  >(null)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState("")
 
   useEffect(() => {
-    const loadWorkspaces = async () => {
+    const loadOrganization = async () => {
       const supabase = createClient()
 
       const {
@@ -38,8 +43,8 @@ export default function DashboardPage() {
       }
 
       const { data: memberships, error: membershipsError } = await supabase
-        .from("workspace_members")
-        .select("workspace_id, role")
+        .from("organization_members")
+        .select("organization_id, role")
         .eq("user_id", user.id)
 
       if (membershipsError) {
@@ -49,20 +54,28 @@ export default function DashboardPage() {
       }
 
       if (!memberships || memberships.length === 0) {
-        setMessage("No workspace found.")
+        window.location.href = "/workspace/create-workspace"
+        return
+      }
+
+      const selectedMembership = organizationId
+        ? memberships.find(
+            (membership: OrganizationMember) =>
+              membership.organization_id === organizationId
+          )
+        : memberships[0]
+
+      if (!selectedMembership) {
+        setMessage("You do not have access to this organization.")
         setLoading(false)
         return
       }
 
-      const workspaceIds = memberships.map(
-        (membership: WorkspaceMember) => membership.workspace_id
-      )
-
       const { data, error } = await supabase
-        .from("workspaces")
-        .select("id, name, type, organization_type, owner_id")
-        .in("id", workspaceIds)
-        .order("created_at", { ascending: false })
+        .from("organizations")
+        .select("id, name, owner_id")
+        .eq("id", selectedMembership.organization_id)
+        .single()
 
       if (error) {
         setMessage(error.message)
@@ -70,24 +83,18 @@ export default function DashboardPage() {
         return
       }
 
-      if (!data || data.length === 0) {
-        setMessage("No workspace found.")
-        setLoading(false)
-        return
-      }
-
-      setWorkspaces(data)
-      setCurrentWorkspace(data[0])
+      setOrganization(data)
+      setRole(selectedMembership.role)
       setLoading(false)
     }
 
-    loadWorkspaces()
-  }, [])
+    loadOrganization()
+  }, [organizationId])
 
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-sm text-muted">Loading workspace...</p>
+        <p className="text-sm text-muted">Loading organization...</p>
       </main>
     )
   }
@@ -105,66 +112,16 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-6xl">
         <div>
           <p className="text-sm font-medium text-primary-dark">
-            Current workspace
+            Organization dashboard
           </p>
 
           <h1 className="mt-2 text-3xl font-semibold text-text">
-            {currentWorkspace?.name}
+            {organization?.name}
           </h1>
 
           <p className="mt-2 text-sm text-muted">
-            Workspace type: {currentWorkspace?.type}
+            You are signed in as {role}.
           </p>
-
-          {currentWorkspace?.organization_type && (
-            <p className="mt-1 text-sm text-muted">
-              Organization type: {currentWorkspace.organization_type}
-            </p>
-          )}
-        </div>
-
-        <div className="mt-10">
-          <h2 className="text-lg font-semibold text-text">
-            Your workspaces
-          </h2>
-
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {workspaces.map((workspace) => (
-              <button
-                key={workspace.id}
-                type="button"
-                onClick={() => setCurrentWorkspace(workspace)}
-                className={`rounded-2xl border p-5 text-left transition-all duration-200 ${
-                  currentWorkspace?.id === workspace.id
-                    ? "border-primary bg-primary-light"
-                    : "border-border bg-foreground hover:border-primary"
-                }`}
-              >
-                <h3 className="font-semibold text-text">
-                  {workspace.name}
-                </h3>
-
-                <p className="mt-2 text-sm capitalize text-muted">
-                  {workspace.type}
-                </p>
-
-                {workspace.organization_type && (
-                  <p className="mt-1 text-sm capitalize text-muted">
-                    {workspace.organization_type}
-                  </p>
-                )}
-
-                <p className="mt-4 text-xs font-medium text-primary-dark">
-                  {workspace.owner_id ===
-                  workspaces.find(
-                    (item) => item.id === workspace.id
-                  )?.owner_id
-                    ? "Workspace"
-                    : "Member"}
-                </p>
-              </button>
-            ))}
-          </div>
         </div>
       </div>
     </main>

@@ -25,20 +25,9 @@ export default function LoginPage() {
   const routeUser = async (userId: string) => {
     const supabase = createClient()
 
-    const { data: ownedWorkspaces, error: ownerError } = await supabase
-      .from("workspaces")
-      .select("id")
-      .eq("owner_id", userId)
-
-    if (ownerError) {
-      setMessage(ownerError.message)
-      setLoading(false)
-      return
-    }
-
     const { data: memberships, error: membershipError } = await supabase
-      .from("workspace_members")
-      .select("workspace_id")
+      .from("organization_members")
+      .select("organization_id")
       .eq("user_id", userId)
 
     if (membershipError) {
@@ -47,20 +36,8 @@ export default function LoginPage() {
       return
     }
 
-    const workspaceIds = [
-      ...(ownedWorkspaces ?? []).map((workspace) => workspace.id),
-      ...(memberships ?? []).map((membership) => membership.workspace_id),
-    ]
-
-    const uniqueWorkspaceIds = [...new Set(workspaceIds)]
-
-    if (uniqueWorkspaceIds.length === 0) {
-      router.replace("/workspace/create")
-      return
-    }
-
-    if (uniqueWorkspaceIds.length === 1) {
-      router.replace(`/workspace/${uniqueWorkspaceIds[0]}/dashboard`)
+    if (!memberships || memberships.length === 0) {
+      router.replace("/workspace/create-workspace")
       return
     }
 
@@ -101,7 +78,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-start justify-center bg-secondary pt-10 ">
+    <main className="flex min-h-screen items-start justify-center bg-secondary pt-10">
       <div className="w-full max-w-[1440px]">
         <div className="mx-auto w-full max-w-[500px]">
           <div className="mb-8 flex justify-center sm:mb-10">
@@ -119,7 +96,8 @@ export default function LoginPage() {
               </h1>
 
               <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted">
-                Access your KYYP workspace and pick up right where you left off.
+                Access your KYYP organization and pick up right where you left
+                off.
               </p>
             </div>
 
@@ -214,11 +192,10 @@ export default function LoginPage() {
 
           <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted sm:mt-7">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-            <span>Secure access to your workspace and account.</span>
+            <span>Secure access to your organization and account.</span>
           </div>
         </div>
       </div>
     </main>
   )
 }
-
