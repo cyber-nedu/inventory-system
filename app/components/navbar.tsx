@@ -9,9 +9,9 @@ import Link from "next/link";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "About", href: "#about" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Contact", href: "#contact" },
+  { label: "About", href: "/about" },
+  { label: "How It Works", href: "/how-it-works" },
+  { label: "Contact", href: "/contacts" },
 ];
 
 const Navbar: React.FC = () => {
@@ -33,13 +33,13 @@ const Navbar: React.FC = () => {
         <div className="hidden items-center lg:flex">
           <nav className="flex items-center gap-5 xl:gap-8">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.label}
                 href={link.href}
                 className="whitespace-nowrap font-sans text-sm font-medium text-foreground hover:text-text transition-colors"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -82,14 +82,14 @@ const Navbar: React.FC = () => {
         <div className="mx-auto mt-2 w-full max-w-[1200px] border border-border bg-foreground/90 px-4 pb-5 pt-2 shadow-lg backdrop-blur-md sm:px-6 lg:hidden">
           <nav className="flex flex-col">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.label}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
                 className="border-b border-border px-2 py-3.5 font-sans text-sm font-medium text-text transition-colors hover:text-primary"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
