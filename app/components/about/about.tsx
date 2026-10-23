@@ -30,7 +30,7 @@ const storyContent = {
 
 const About: React.FC = () => {
   return (
-    <main id="about">
+    <main>
       <section className="bg-background px-4 py-20 sm:px-6 sm:py-24 lg:px-10 lg:py-28">
         <div className="mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="max-w-2xl">

@@ -1,7 +1,5 @@
-export default function Members() {
-    return (
-        <main>
-            Add members
-        </main>
-    )
+import Members from "./members"
+
+export default function MembersPage() {
+  return <Members />
 }

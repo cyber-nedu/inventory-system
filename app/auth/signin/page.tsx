@@ -8,7 +8,6 @@ import {
   ShieldCheck,
 } from "lucide-react"
 import { createClient } from "@/app/lib/supabase/client"
-import Logo from "@/app/components/logo"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -115,9 +114,6 @@ export default function SignupPage() {
     <main className="flex min-h-screen items-start justify-center bg-secondary px-4 pb-8 pt-32 sm:px-6 sm:pb-10 sm:pt-36 lg:pt-40">
       <div className="w-full max-w-[1440px]">
         <div className="mx-auto w-full max-w-[500px]">
-          <div className="mb-8 flex justify-center sm:mb-10">
-            <Logo />
-          </div>
 
           <div className="border border-border/70 bg-foreground/75 p-5 shadow-2xl shadow-text/5 backdrop-blur-xl sm:p-8 md:p-9">
             <div className="mb-8 text-center">

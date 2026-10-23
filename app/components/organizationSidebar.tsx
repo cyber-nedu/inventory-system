@@ -14,6 +14,7 @@ import {
   Truck,
   Users,
   X,
+  HomeIcon,
 } from "lucide-react"
 import { useState } from "react"
 import Logo from "@/app/components/logo"
@@ -61,8 +62,13 @@ const navigationItems: NavigationItem[] = [
   },
   {
     label: "Settings",
-    href: "/dashboard/settings",
+    href: "/dashboard/setting",
     icon: Settings,
+  },
+  {
+    label: "Home",
+    href: "/",
+    icon: HomeIcon,
   },
 ]
 
@@ -73,6 +79,10 @@ export default function Sidebar({
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   const isActive = (href: string) => {
+    if (href === "/") {
+      return false
+    }
+
     if (href === "/dashboard") {
       return pathname === href
     }

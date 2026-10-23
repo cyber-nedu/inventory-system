@@ -167,16 +167,6 @@ export default function PasswordPage() {
       <main className="flex min-h-screen items-center justify-center bg-secondary px-4 py-8 sm:px-6 sm:py-10">
         <div className="w-full max-w-[1440px]">
           <div className="mx-auto w-full max-w-[500px]">
-            <div className="mb-8 flex flex-col items-center text-center sm:mb-10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-dark text-foreground shadow-lg shadow-primary-dark/10 sm:h-13 sm:w-13">
-                <CirclePile className="h-6 w-6 sm:h-6.5 sm:w-6.5" />
-              </div>
-
-              <div className="mt-4 text-3xl font-bold tracking-tight text-text sm:text-4xl">
-                KYYP<span className="text-primary-dark">.</span>
-              </div>
-            </div>
-
             <div className="border border-border/70 bg-foreground/75 p-5 shadow-2xl shadow-text/5 backdrop-blur-xl sm:p-8 md:p-9">
               <div className="mb-8 text-center">
                 <p className="text-sm font-semibold tracking-wide text-primary-dark">

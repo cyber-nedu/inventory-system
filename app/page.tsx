@@ -3,7 +3,6 @@ import About from "@/app/components/about/about"
 import Howitworks from "@/app/components/how-it-works/how-it-works"
 import Contacts from "@/app/components/contacts/contacts"
 import Navbar from "@/app/components/navbar"
-import Footer from "@/app/components/footer"
 
 const KyypProject: React.FC = () => {
   return (
@@ -13,7 +12,6 @@ const KyypProject: React.FC = () => {
       <About />
       <Howitworks />
       <Contacts />
-      <Footer />
     </main>
   )
 }

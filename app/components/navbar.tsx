@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import AuthenticatedUser from "./authenticated-users";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Logo from "./logo";
-import Link from "next/link";
+import { createClient } from "@/app/lib/supabase/client";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -17,15 +19,48 @@ const navLinks = [
 const Navbar: React.FC = () => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setIsAuthenticated(!!session);
+    };
+
+    getSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleNavigation = (href: string) => {
     setIsMenuOpen(false);
     router.push(href);
   };
 
+  if (isAuthenticated === null) {
+    return null;
+  }
+
+  if (isAuthenticated) {
+    return <AuthenticatedUser />;
+  }
+
   return (
     <header className="fixed left-0 top-0 z-50 w-full px-3 pt-3 sm:px-5 sm:pt-4 lg:px-6">
-      <div className="mx-auto flex min-h-20 w-full max-w-[1200px] items-center justify-between rounded-full border border-border px-4 shadow-lg backdrop-blur sm:px-6 md:px-8 lg:px-10 xl:px-12">
+      <div className="mx-auto flex min-h-20 w-full max-w-[1200px] items-center justify-between rounded-full border border-border px-4 backdrop-blur sm:px-6 md:px-8 lg:px-10 xl:px-12">
         <Link href="/" className="shrink-0">
           <Logo />
         </Link>
@@ -36,7 +71,7 @@ const Navbar: React.FC = () => {
               <Link
                 key={link.label}
                 href={link.href}
-                className="whitespace-nowrap font-sans text-sm font-medium text-foreground hover:text-text transition-colors"
+                className="whitespace-nowrap font-sans text-sm font-medium text-text transition-colors"
               >
                 {link.label}
               </Link>
