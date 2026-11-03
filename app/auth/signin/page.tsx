@@ -82,7 +82,7 @@ export default function SignupPage() {
       localStorage.removeItem("kyyp_remember_me")
     }
 
-    router.replace("create-workspace")
+    router.replace("/workspace/create-workspace")
   }
 
   return (
