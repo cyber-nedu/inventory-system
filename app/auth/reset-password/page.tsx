@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 import { createClient } from "@/app/lib/supabase/client"
 
-export default function PasswordPage() {
+export default function ResetPassword() {
   const router = useRouter()
 
   const [sessionEmail, setSessionEmail] = useState("")
@@ -42,7 +42,10 @@ export default function PasswordPage() {
       }
 
       if (!session?.user) {
-        router.replace("/auth/login")
+        setMessage(
+          "Your password reset session is missing or has expired. Please request a new reset link."
+        )
+        setCheckingSession(false)
         return
       }
 
@@ -51,7 +54,7 @@ export default function PasswordPage() {
     }
 
     checkSession()
-  }, [router])
+  }, [])
 
   const hasMinLength = password.length >= 8
   const hasUppercase = /[A-Z]/.test(password)
@@ -66,7 +69,7 @@ export default function PasswordPage() {
     hasNumber &&
     hasSymbol
 
-  const createPassword = async (e: React.FormEvent) => {
+  const resetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (loading) {
@@ -74,7 +77,7 @@ export default function PasswordPage() {
     }
 
     if (!password || !confirmPassword) {
-      setMessage("Please enter and confirm your password.")
+      setMessage("Please enter and confirm your new password.")
       return
     }
 
@@ -98,7 +101,7 @@ export default function PasswordPage() {
     })
 
     if (error || !data.user) {
-      setMessage(error?.message || "Unable to create your password.")
+      setMessage(error?.message || "Unable to reset your password.")
       setLoading(false)
       return
     }
@@ -107,16 +110,12 @@ export default function PasswordPage() {
     setShowSuccessModal(true)
   }
 
-  const logout = async () => {
+  const backToLogin = async () => {
     const supabase = createClient()
 
     await supabase.auth.signOut()
 
     router.replace("/auth/login")
-  }
-
-  const continueToWorkspace = () => {
-    router.replace("/workspace/create-workspace")
   }
 
   if (checkingSession) {
@@ -132,7 +131,7 @@ export default function PasswordPage() {
           </div>
 
           <p className="mt-5 text-sm font-medium text-muted">
-            Checking your session...
+            Checking your reset session...
           </p>
         </div>
       </main>
@@ -170,20 +169,19 @@ export default function PasswordPage() {
             <div className="border border-border/70 bg-foreground/75 p-5 shadow-2xl shadow-text/5 backdrop-blur-xl sm:p-8 md:p-9">
               <div className="mb-8 text-center">
                 <p className="text-sm font-semibold tracking-wide text-primary-dark">
-                  Account setup
+                  Password reset
                 </p>
 
                 <h1 className="mt-2 text-2xl font-semibold tracking-tight text-text sm:text-3xl">
-                  Create your password
+                  Reset your password
                 </h1>
 
                 <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted">
-                  Your email has been verified. Create a secure password to
-                  continue to your KYYP workspace.
+                  Create a new secure password for your KYYP account.
                 </p>
               </div>
 
-              <form onSubmit={createPassword} className="space-y-5">
+              <form onSubmit={resetPassword} className="space-y-5">
                 {sessionEmail && (
                   <div className="border border-border bg-secondary px-4 py-3 text-sm text-muted">
                     <span className="font-medium text-text">
@@ -194,7 +192,7 @@ export default function PasswordPage() {
 
                 <fieldset className="relative border border-border bg-foreground transition-all duration-200 focus-within:border-primary-dark focus-within:shadow-sm">
                   <legend className="ml-3 px-2 text-xs font-medium text-muted">
-                    Password
+                    New password
                   </legend>
 
                   <div className="relative">
@@ -264,7 +262,7 @@ export default function PasswordPage() {
 
                 <fieldset className="relative border border-border bg-foreground transition-all duration-200 focus-within:border-primary-dark focus-within:shadow-sm">
                   <legend className="ml-3 px-2 text-xs font-medium text-muted">
-                    Confirm password
+                    Confirm new password
                   </legend>
 
                   <div className="relative">
@@ -273,7 +271,7 @@ export default function PasswordPage() {
                     <input
                       id="confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Repeat your password"
+                      placeholder="Repeat your new password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
@@ -336,33 +334,33 @@ export default function PasswordPage() {
                   }
                   className="group flex h-13 w-full items-center justify-center gap-2 bg-primary-dark text-sm font-semibold text-foreground shadow-lg shadow-primary-dark/10 transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:h-14"
                 >
-                  {loading ? "Creating password..." : "Create password"}
+                  {loading ? "Resetting password..." : "Reset password"}
 
                   {!loading && (
                     <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                   )}
                 </button>
 
+                {message && (
+                  <div className="border border-primary/20 bg-primary-light px-4 py-3 text-center text-sm leading-5 text-primary-dark">
+                    {message}
+                  </div>
+                )}
+
                 <button
                   type="button"
-                  onClick={logout}
+                  onClick={backToLogin}
                   disabled={loading}
                   className="w-full pt-1 text-center text-sm font-medium text-muted transition-colors hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Sign out instead
+                  Back to login
                 </button>
               </form>
-
-              {message && (
-                <div className="mt-6 border border-primary/20 bg-primary-light px-4 py-3 text-center text-sm leading-5 text-primary-dark">
-                  {message}
-                </div>
-              )}
             </div>
 
             <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted sm:mt-7">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-              <span>Secure account setup and protected access.</span>
+              <span>Secure password recovery and protected access.</span>
             </div>
           </div>
         </div>
@@ -376,20 +374,20 @@ export default function PasswordPage() {
             </div>
 
             <h2 className="mt-6 text-2xl font-semibold tracking-tight text-text">
-              Password created successfully
+              Password reset successfully
             </h2>
 
             <p className="mt-3 text-sm leading-6 text-muted">
-              Your account is ready. The next step is to create your KYYP
-              workspace.
+              Your password has been updated successfully. You can now sign in
+              to your KYYP account with your new password.
             </p>
 
             <button
               type="button"
-              onClick={continueToWorkspace}
+              onClick={backToLogin}
               className="group mt-7 flex h-13 w-full items-center justify-center gap-2 bg-primary-dark text-sm font-semibold text-foreground shadow-lg shadow-primary-dark/10 transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90 hover:shadow-xl sm:h-14"
             >
-              Create workspace
+              Back to login
 
               <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
             </button>

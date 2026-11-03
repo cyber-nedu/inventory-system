@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
   const [message, setMessage] = useState("")
 
   const routeUser = async () => {
@@ -62,7 +63,7 @@ export default function LoginPage() {
   const login = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (loading) {
+    if (loading || resetLoading) {
       return
     }
 
@@ -94,11 +95,47 @@ export default function LoginPage() {
     await routeUser()
   }
 
+  const resetPassword = async () => {
+    if (loading || resetLoading) {
+      return
+    }
+
+    const trimmedEmail = email.trim()
+
+    if (!trimmedEmail) {
+      setMessage("Enter your email address first.")
+      return
+    }
+
+    setResetLoading(true)
+    setMessage("")
+
+    const supabase = createClient()
+
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      trimmedEmail,
+      {
+        redirectTo: `${window.location.origin}/auth/create-password`,
+      }
+    )
+
+    if (error) {
+      setMessage(error.message)
+      setResetLoading(false)
+      return
+    }
+
+    setMessage(
+      "If an account exists for this email, a password reset link has been sent."
+    )
+
+    setResetLoading(false)
+  }
+
   return (
     <main className="flex min-h-screen items-start justify-center bg-secondary pt-10">
       <div className="w-full max-w-[1440px]">
         <div className="mx-auto w-full max-w-[500px]">
-
           <div className="border border-border/70 bg-foreground/75 p-5 shadow-2xl shadow-text/5 backdrop-blur-xl sm:p-8 md:p-9">
             <div className="mb-8 text-center">
               <p className="text-sm font-semibold tracking-wide text-primary-dark">
@@ -131,7 +168,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={loading}
+                    disabled={loading || resetLoading}
                     className="h-13 w-full bg-transparent px-4 pl-11 text-sm text-text outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60 sm:h-14"
                   />
                 </div>
@@ -152,14 +189,14 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    disabled={loading}
+                    disabled={loading || resetLoading}
                     className="h-13 w-full bg-transparent px-12 text-sm text-text outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60 sm:h-14"
                   />
 
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    disabled={loading}
+                    disabled={loading || resetLoading}
                     className="absolute right-3.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-muted transition-colors hover:text-text disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
@@ -177,16 +214,17 @@ export default function LoginPage() {
               <div className="flex justify-end pt-1">
                 <button
                   type="button"
-                  onClick={() => router.push("/auth/create-password")}
-                  className="text-sm font-medium text-muted transition-colors hover:text-primary-dark"
+                  onClick={resetPassword}
+                  disabled={loading || resetLoading}
+                  className="text-sm font-medium text-muted transition-colors hover:text-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Forgot password?
+                  {resetLoading ? "Sending reset link..." : "Forgot password?"}
                 </button>
               </div>
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || resetLoading}
                 className="group flex h-13 w-full items-center justify-center gap-2 bg-primary-dark text-sm font-semibold text-foreground shadow-lg shadow-primary-dark/10 transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:h-14"
               >
                 {loading ? "Signing in..." : "Sign in"}

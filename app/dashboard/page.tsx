@@ -1,10 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Bell, UserCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/app/lib/supabase/client"
 import Sidebar from "@/app/components/organizationSidebar"
+import DashboardHeader from "./dashboard-header"
+import OverviewStats from "./overview-stats"
+import OperationalStats from "./operational-stats"
+import RouteStatistics from "./route-statistics"
+import VehicleStatistics from "./vehicle-statistics"
+import RecentActivities from "./recent-activities"
 
 type Organization = {
   id: string
@@ -22,9 +27,11 @@ export default function DashboardPage() {
 
   const [organization, setOrganization] =
     useState<Organization | null>(null)
+
   const [role, setRole] = useState<
     "owner" | "admin" | "manager" | "staff" | null
   >(null)
+
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState("")
 
@@ -43,10 +50,11 @@ export default function DashboardPage() {
         return
       }
 
-      const { data: memberships, error: membershipsError } = await supabase
-        .from("organization_members")
-        .select("organization_id, role")
-        .eq("user_id", user.id)
+      const { data: memberships, error: membershipsError } =
+        await supabase
+          .from("organization_members")
+          .select("organization_id, role")
+          .eq("user_id", user.id)
 
       if (membershipsError) {
         setMessage(membershipsError.message)
@@ -86,8 +94,10 @@ export default function DashboardPage() {
       <main>
         <Sidebar />
 
-        <div className="flex min-h-screen items-center justify-center bg-secondary lg:ml-[260px]">
-          <p className="text-sm text-muted">Loading organization...</p>
+        <div className="flex min-h-screen items-center justify-center bg-secondary px-5 lg:ml-[260px]">
+          <p className="text-sm text-muted">
+            Loading organization...
+          </p>
         </div>
       </main>
     )
@@ -96,64 +106,72 @@ export default function DashboardPage() {
   if (message) {
     return (
       <main>
-        <div className="flex min-h-screen items-center justify-center bg-secondary px-5">
-          <p className="text-sm text-muted">{message}</p>
+        <Sidebar />
+
+        <div className="flex min-h-screen items-center justify-center bg-secondary px-5 lg:ml-[260px]">
+          <div className="max-w-md text-center">
+            <p className="text-sm font-semibold text-text">
+              Unable to load dashboard
+            </p>
+
+            <p className="mt-2 text-sm leading-6 text-muted">
+              {message}
+            </p>
+          </div>
         </div>
       </main>
     )
   }
 
+  if (!organization || !role) {
+    return null
+  }
+
   return (
     <main>
-      <Sidebar />
+      <Sidebar organizationName={organization.name} />
 
       <div className="min-h-screen bg-secondary lg:ml-[260px]">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-          <header className="flex min-h-[76px] items-center justify-between rounded-full border border-border bg-foreground px-4 shadow-sm sm:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-light text-primary-dark">
-                <UserCircle className="h-6 w-6" strokeWidth={1.7} />
-              </div>
+        <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6 sm:py-7 lg:px-9">
+          <DashboardHeader
+            organizationName={organization.name}
+            role={role}
+          />
 
-              <div className="min-w-0">
-                <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted">
-                  {role}
-                </p>
+          <section className="relative overflow-hidden pb-10 pt-12 sm:pb-12 sm:pt-16">
+            <div className="pointer-events-none absolute right-0 top-8 hidden h-48 w-48 rounded-full border border-border/60 lg:block" />
 
-                <p className="truncate text-sm font-semibold text-text sm:text-[15px]">
-                  {organization?.name}
-                </p>
-              </div>
-            </div>
+            <div className="pointer-events-none absolute right-8 top-16 hidden h-32 w-32 rounded-full border border-border/60 lg:block" />
 
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted transition-colors duration-200 hover:bg-secondary hover:text-text"
-            >
-              <Bell className="h-[18px] w-[18px]" strokeWidth={1.8} />
-
-              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-primary" />
-            </button>
-          </header>
-
-          <section className="pt-10 sm:pt-12">
-            <div className="max-w-3xl">
-              <p className="text-sm font-medium text-primary-dark">
-                Dashboard
+            <div className="relative max-w-3xl">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+                Transportation management
               </p>
 
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-text sm:text-4xl">
-                Welcome back
-              </h1>
+              <h2 className="mt-3 text-2xl font-bold tracking-tight text-text sm:text-3xl lg:text-[38px]">
+                Your operations, at a glance.
+              </h2>
 
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-                Manage your transportation operations, keep your team
-                organized, and stay on top of everything happening across your
-                organization.
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-muted sm:text-base sm:leading-8">
+                Monitor your routes, manage your vehicles, and keep your
+                transportation operations organized from one place.
               </p>
             </div>
           </section>
+
+          <div className="space-y-8 pb-12">
+            <OverviewStats />
+
+            <OperationalStats />
+
+            <div className="grid items-start gap-6 xl:grid-cols-[1.35fr_0.85fr]">
+              <RouteStatistics />
+
+              <VehicleStatistics />
+            </div>
+
+            <RecentActivities />
+          </div>
         </div>
       </div>
     </main>

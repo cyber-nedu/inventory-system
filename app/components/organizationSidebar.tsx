@@ -46,16 +46,6 @@ const navigationItems: NavigationItem[] = [
     icon: Truck,
   },
   {
-    label: "Members",
-    href: "/dashboard/members",
-    icon: Users,
-  },
-  {
-    label: "Payments",
-    href: "/dashboard/payments",
-    icon: CreditCard,
-  },
-  {
     label: "Reports",
     href: "/dashboard/reports",
     icon: BarChart3,
