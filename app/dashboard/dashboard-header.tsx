@@ -8,16 +8,9 @@ type DashboardHeaderProps = {
   role: "owner" | "admin" | "manager" | "staff"
 }
 
-const roleLabels = {
-  owner: "OWNER",
-  admin: "ADMIN",
-  manager: "MANAGER",
-  staff: "STAFF",
-}
-
 export default function DashboardHeader({
   organizationName,
-  role,
+  role: _role,
 }: DashboardHeaderProps) {
   const notificationRef = useRef<HTMLDivElement>(null)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -48,26 +41,18 @@ export default function DashboardHeader({
   }, [])
 
   return (
-    <header className="relative z-20 flex min-h-[88px] items-center justify-between gap-4 border border-border bg-foreground px-5 py-4 shadow-[0_12px_40px_-28px_rgba(0,0,0,0.3)] sm:px-7 lg:px-9">
+    <header className="relative z-30 flex min-h-[72px] items-center justify-between gap-4 border border-border bg-foreground px-4 shadow-sm transition-shadow duration-300 hover:shadow-md sm:px-6 lg:px-7">
       <div className="min-w-0">
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
-          Welcome
+          Workspace
         </p>
 
-        <h1 className="truncate text-xl font-bold tracking-tight text-text sm:text-2xl lg:text-[28px]">
+        <h2 className="truncate text-lg font-bold tracking-tight text-text sm:text-xl">
           {organizationName}
-        </h1>
+        </h2>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-        <div className="hidden items-center gap-2 border border-border bg-secondary/70 px-4 py-2.5 sm:flex">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary-dark" />
-
-          <span className="text-[10px] font-bold tracking-[0.12em] text-text">
-            {roleLabels[role]}
-          </span>
-        </div>
-
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         <div className="relative" ref={notificationRef}>
           <button
             type="button"
@@ -76,45 +61,59 @@ export default function DashboardHeader({
             onClick={() =>
               setNotificationsOpen((current) => !current)
             }
-            className={`relative flex h-11 w-11 items-center justify-center border transition-all duration-200 sm:h-12 sm:w-12 ${
+            className={`relative flex h-10 w-10 items-center justify-center border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:h-11 sm:w-11 ${
               notificationsOpen
                 ? "border-text bg-text text-foreground"
-                : "border-border bg-foreground text-muted hover:border-text/30 hover:bg-secondary hover:text-text"
+                : "border-border bg-foreground text-muted hover:border-primary/20 hover:bg-primary-light/40 hover:text-text"
             }`}
           >
-            <Bell className="h-[19px] w-[19px]" strokeWidth={1.8} />
+            <Bell
+              aria-hidden="true"
+              className="h-[18px] w-[18px]"
+              strokeWidth={1.8}
+            />
 
-            <span className="absolute right-[9px] top-[8px] h-2 w-2 rounded-full border-2 border-foreground bg-red-500" />
+            <span
+              aria-hidden="true"
+              className="absolute right-[7px] top-[7px] h-2 w-2 rounded-full border-2 border-foreground bg-red-500"
+            />
           </button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 top-[calc(100%+14px)] w-[min(340px,calc(100vw-32px))] overflow-hidden border border-border bg-foreground shadow-[0_20px_60px_-20px_rgba(0,0,0,0.25)]">
+            <div className="absolute right-0 top-[calc(100%+12px)] w-[min(340px,calc(100vw-32px))] overflow-hidden border border-border bg-foreground shadow-[0_24px_70px_-24px_rgba(15,23,42,0.28)]">
               <div className="flex items-center justify-between border-b border-border px-5 py-4">
                 <div>
-                  <h2 className="text-sm font-semibold text-text">
+                  <h3 className="text-sm font-semibold text-text">
                     Notifications
-                  </h2>
+                  </h3>
 
                   <p className="mt-1 text-xs text-muted">
                     Your latest updates
                   </p>
                 </div>
 
-                <span className="flex h-8 w-8 items-center justify-center bg-secondary text-muted">
+                <span
+                  aria-hidden="true"
+                  className="flex h-8 w-8 items-center justify-center bg-secondary text-muted"
+                >
                   <Bell className="h-3.5 w-3.5" />
                 </span>
               </div>
 
-              <div className="px-5 py-9 text-center">
-                <div className="mx-auto flex h-11 w-11 items-center justify-center bg-secondary text-muted">
-                  <Check className="h-5 w-5" />
+              <div className="px-5 py-10 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center bg-primary-light text-primary">
+                  <Check
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                    strokeWidth={2}
+                  />
                 </div>
 
-                <p className="mt-3 text-sm font-medium text-text">
+                <p className="mt-4 text-sm font-semibold text-text">
                   You’re all caught up
                 </p>
 
-                <p className="mx-auto mt-1 max-w-[230px] text-xs leading-5 text-muted">
+                <p className="mx-auto mt-1.5 max-w-[240px] text-xs leading-5 text-muted">
                   New notifications and important updates will appear here.
                 </p>
               </div>
@@ -131,9 +130,13 @@ export default function DashboardHeader({
         <button
           type="button"
           aria-label="Profile"
-          className="flex h-11 w-11 items-center justify-center text-text transition-colors duration-200 hover:bg-secondary sm:h-12 sm:w-12"
+          className="flex h-10 w-10 items-center justify-center border border-transparent text-text transition-all duration-200 hover:border-border hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:h-11 sm:w-11"
         >
-          <UserRound className="h-[23px] w-[23px]" strokeWidth={1.6} />
+          <UserRound
+            aria-hidden="true"
+            className="h-[21px] w-[21px]"
+            strokeWidth={1.6}
+          />
         </button>
       </div>
     </header>

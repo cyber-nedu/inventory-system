@@ -1,5 +1,9 @@
 import Link from "next/link"
-import { ArrowRight, MapPin, Route } from "lucide-react"
+import {
+  ArrowRight,
+  MapPin,
+  Route,
+} from "lucide-react"
 
 const recentRoutes = [
   {
@@ -38,31 +42,32 @@ const recentRoutes = [
 
 export default function RouteStatistics() {
   return (
-    <section className="border border-border bg-foreground">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-5 sm:px-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <Route className="h-4 w-4 text-primary" />
+    <section className="border border-border bg-foreground shadow-[0_8px_30px_-28px_rgba(15,23,42,0.4)]">
+      <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-primary-light text-primary-dark">
+            <Route
+              className="h-4 w-4"
+              strokeWidth={1.8}
+            />
+          </span>
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-              Route management
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+              Routes
             </p>
+
+            <h2 className="mt-1 text-base font-bold tracking-tight text-text">
+              Recent routes
+            </h2>
           </div>
-
-          <h2 className="mt-2 text-lg font-bold tracking-tight text-text">
-            Recent routes
-          </h2>
-
-          <p className="mt-1 text-xs text-muted">
-            A summary of your configured transportation routes.
-          </p>
         </div>
 
         <Link
           href="/dashboard/routes"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-primary transition-colors hover:text-primary-dark"
+          className="inline-flex min-h-10 shrink-0 items-center gap-1.5 px-2 text-xs font-semibold text-primary transition-colors hover:text-primary-dark"
         >
-          View all routes
+          View all
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
@@ -71,39 +76,47 @@ export default function RouteStatistics() {
         {recentRoutes.map((route) => (
           <div
             key={route.id}
-            className="flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-secondary/40 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+            className="group flex flex-col gap-3 px-5 py-4 transition-colors hover:bg-background sm:flex-row sm:items-center sm:justify-between sm:px-6"
           >
-            <div className="flex min-w-0 items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary-light text-primary-dark">
-                <MapPin className="h-[18px] w-[18px]" strokeWidth={1.8} />
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-secondary text-muted transition-colors group-hover:bg-primary-light group-hover:text-primary-dark">
+                <MapPin
+                  className="h-4 w-4"
+                  strokeWidth={1.8}
+                />
               </span>
 
               <div className="min-w-0">
-                <h3 className="truncate text-sm font-semibold text-text">
-                  {route.name}
-                </h3>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="truncate text-sm font-semibold text-text">
+                    {route.name}
+                  </h3>
+
+                  <span className="text-[9px] font-medium uppercase tracking-wider text-muted">
+                    {route.id}
+                  </span>
+                </div>
 
                 <p className="mt-1 text-xs text-muted">
-                  {route.id} · {route.distance}
-                </p>
-
-                <p className="mt-1 text-xs text-muted">
-                  {route.origin} <span className="px-1">→</span>{" "}
+                  {route.origin}
+                  <span className="mx-1.5 text-primary">
+                    →
+                  </span>
                   {route.destination}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-4 sm:justify-end">
+            <div className="flex items-center justify-between gap-5 pl-12 sm:justify-end sm:pl-0">
               <span
-                className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${
+                className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide ${
                   route.status === "Active"
                     ? "text-emerald-700"
                     : "text-muted"
                 }`}
               >
                 <span
-                  className={`h-1.5 w-1.5 rounded-full ${
+                  className={`h-1.5 w-1.5 ${
                     route.status === "Active"
                       ? "bg-emerald-600"
                       : "bg-muted"
@@ -112,7 +125,7 @@ export default function RouteStatistics() {
                 {route.status}
               </span>
 
-              <span className="text-xs font-medium text-muted">
+              <span className="text-xs font-bold text-text">
                 {route.distance}
               </span>
             </div>
@@ -120,13 +133,16 @@ export default function RouteStatistics() {
         ))}
       </div>
 
-      <div className="border-t border-border px-5 py-3 sm:px-6">
+      <div className="flex items-center justify-between border-t border-border bg-background px-5 py-3 sm:px-6">
+        <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted">
+          4 configured routes
+        </p>
+
         <Link
           href="/dashboard/routes"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary-dark"
+          className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary hover:text-primary-dark"
         >
           Manage routes
-          <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     </section>

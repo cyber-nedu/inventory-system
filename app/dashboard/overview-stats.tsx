@@ -1,10 +1,10 @@
 import {
   ArrowDownRight,
   ArrowUpRight,
+  CircleCheck,
   Route,
   Truck,
   Wrench,
-  CircleCheck,
 } from "lucide-react"
 
 const overviewStats = [
@@ -12,7 +12,7 @@ const overviewStats = [
     label: "Total routes",
     value: "24",
     change: "+12.5%",
-    description: "Compared to last month",
+    description: "vs last month",
     trend: "up",
     icon: Route,
   },
@@ -20,7 +20,7 @@ const overviewStats = [
     label: "Active routes",
     value: "18",
     change: "+8.2%",
-    description: "Compared to last month",
+    description: "vs last month",
     trend: "up",
     icon: CircleCheck,
   },
@@ -28,15 +28,15 @@ const overviewStats = [
     label: "Total vehicles",
     value: "42",
     change: "+4.8%",
-    description: "Compared to last month",
+    description: "vs last month",
     trend: "up",
     icon: Truck,
   },
   {
-    label: "Under maintenance",
+    label: "Maintenance",
     value: "05",
     change: "-2.4%",
-    description: "Compared to last month",
+    description: "vs last month",
     trend: "down",
     icon: Wrench,
   },
@@ -45,27 +45,23 @@ const overviewStats = [
 export default function OverviewStats() {
   return (
     <section>
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-            At a glance
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+            Overview
           </p>
 
           <h2 className="mt-1 text-lg font-bold tracking-tight text-text sm:text-xl">
-            Operational overview
+            Operations snapshot
           </h2>
-
-          <p className="mt-1 text-sm text-muted">
-            A quick look at your transportation operations.
-          </p>
         </div>
 
-        <span className="text-xs font-medium text-muted">
-          Sample overview data
+        <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted">
+          Current fleet data
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden border border-border bg-border xl:grid-cols-4">
         {overviewStats.map((stat) => {
           const Icon = stat.icon
           const TrendIcon =
@@ -74,35 +70,38 @@ export default function OverviewStats() {
           return (
             <article
               key={stat.label}
-              className="border border-border bg-foreground p-5 transition-colors duration-200 hover:border-primary/30 sm:p-6"
+              className="bg-foreground p-4 transition-colors duration-200 hover:bg-background sm:p-5"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex h-10 w-10 items-center justify-center bg-primary-light text-primary-dark">
-                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.8} />
-                </div>
+                <span className="flex h-9 w-9 items-center justify-center bg-primary-light text-primary-dark">
+                  <Icon
+                    className="h-[17px] w-[17px]"
+                    strokeWidth={1.8}
+                  />
+                </span>
 
                 <span
-                  className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
+                  className={`inline-flex items-center gap-0.5 text-[10px] font-bold ${
                     stat.trend === "up"
                       ? "text-emerald-700"
                       : "text-amber-700"
                   }`}
                 >
-                  <TrendIcon className="h-3.5 w-3.5" />
+                  <TrendIcon className="h-3 w-3" />
                   {stat.change}
                 </span>
               </div>
 
-              <div className="mt-6">
-                <p className="text-sm font-medium text-muted">
+              <div className="mt-5">
+                <p className="text-xs font-medium text-muted">
                   {stat.label}
                 </p>
 
-                <p className="mt-1 text-[32px] font-bold leading-none tracking-tight text-text">
+                <p className="mt-1 text-3xl font-bold leading-none tracking-tight text-text sm:text-[34px]">
                   {stat.value}
                 </p>
 
-                <p className="mt-3 text-[11px] text-muted">
+                <p className="mt-2 text-[10px] text-muted">
                   {stat.description}
                 </p>
               </div>

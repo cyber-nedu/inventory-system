@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/app/lib/supabase/client"
 import Sidebar from "@/app/components/organizationSidebar"
+import DashboardBackground from "./dashboard-background"
 import DashboardHeader from "./dashboard-header"
 import OverviewStats from "./overview-stats"
 import OperationalStats from "./operational-stats"
@@ -19,7 +20,6 @@ type Organization = {
 
 type OrganizationMember = {
   organization_id: string
-  role: "owner" | "admin" | "manager" | "staff"
 }
 
 export default function DashboardPage() {
@@ -27,10 +27,6 @@ export default function DashboardPage() {
 
   const [organization, setOrganization] =
     useState<Organization | null>(null)
-
-  const [role, setRole] = useState<
-    "owner" | "admin" | "manager" | "staff" | null
-  >(null)
 
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState("")
@@ -53,7 +49,7 @@ export default function DashboardPage() {
       const { data: memberships, error: membershipsError } =
         await supabase
           .from("organization_members")
-          .select("organization_id, role")
+          .select("organization_id")
           .eq("user_id", user.id)
 
       if (membershipsError) {
@@ -67,7 +63,8 @@ export default function DashboardPage() {
         return
       }
 
-      const membership = memberships[0] as OrganizationMember
+      const membership =
+        memberships[0] as OrganizationMember
 
       const { data, error } = await supabase
         .from("organizations")
@@ -82,22 +79,28 @@ export default function DashboardPage() {
       }
 
       setOrganization(data)
-      setRole(membership.role)
       setLoading(false)
     }
 
-    loadOrganization()
+    void loadOrganization()
   }, [router])
 
   if (loading) {
     return (
-      <main>
+      <main className="min-h-screen bg-background">
         <Sidebar />
 
-        <div className="flex min-h-screen items-center justify-center bg-secondary px-5 lg:ml-[260px]">
-          <p className="text-sm text-muted">
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 lg:ml-[260px]">
+          <DashboardBackground />
+
+          <div className="relative flex items-center gap-3 text-sm text-muted">
+            <span
+              className="h-4 w-4 animate-spin border-2 border-border border-t-primary"
+              aria-hidden="true"
+            />
+
             Loading organization...
-          </p>
+          </div>
         </div>
       </main>
     )
@@ -105,12 +108,23 @@ export default function DashboardPage() {
 
   if (message) {
     return (
-      <main>
+      <main className="min-h-screen bg-background">
         <Sidebar />
 
-        <div className="flex min-h-screen items-center justify-center bg-secondary px-5 lg:ml-[260px]">
-          <div className="max-w-md text-center">
-            <p className="text-sm font-semibold text-text">
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 lg:ml-[260px]">
+          <DashboardBackground />
+
+          <div className="relative w-full max-w-md border border-border bg-foreground p-6 text-center shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] sm:p-8">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center bg-red-50 text-red-600">
+              <span
+                className="font-bold"
+                aria-hidden="true"
+              >
+                !
+              </span>
+            </div>
+
+            <p className="mt-5 text-sm font-bold text-text">
               Unable to load dashboard
             </p>
 
@@ -123,48 +137,73 @@ export default function DashboardPage() {
     )
   }
 
-  if (!organization || !role) {
+  if (!organization) {
     return null
   }
 
   return (
-    <main>
+    <main className="min-h-screen bg-background">
       <Sidebar organizationName={organization.name} />
 
-      <div className="min-h-screen bg-secondary lg:ml-[260px]">
-        <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6 sm:py-7 lg:px-9">
+      <div className="relative min-h-screen overflow-hidden lg:ml-[260px]">
+        <DashboardBackground />
+
+        <div className="relative mx-auto w-full max-w-[1560px] px-3 py-3 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
           <DashboardHeader
             organizationName={organization.name}
-            role={role}
           />
 
-          <section className="relative overflow-hidden pb-10 pt-12 sm:pb-12 sm:pt-16">
-            <div className="pointer-events-none absolute right-0 top-8 hidden h-48 w-48 rounded-full border border-border/60 lg:block" />
+          <section className="py-7 sm:py-9">
+            <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+              <div className="max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 bg-primary" />
 
-            <div className="pointer-events-none absolute right-8 top-16 hidden h-32 w-32 rounded-full border border-border/60 lg:block" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                    Transportation operations
+                  </p>
+                </div>
 
-            <div className="relative max-w-3xl">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
-                Transportation management
-              </p>
+                <h2 className="mt-3 text-2xl font-bold tracking-tight text-text sm:text-3xl lg:text-[36px]">
+                  Operations at a glance.
+                </h2>
 
-              <h2 className="mt-3 text-2xl font-bold tracking-tight text-text sm:text-3xl lg:text-[38px]">
-                Your operations, at a glance.
-              </h2>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
+                  Monitor your routes, fleet availability, and
+                  operational activity from one workspace.
+                </p>
+              </div>
 
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-muted sm:text-base sm:leading-8">
-                Monitor your routes, manage your vehicles, and keep your
-                transportation operations organized from one place.
-              </p>
+              <div className="grid grid-cols-2 border border-border bg-foreground sm:w-auto">
+                <div className="border-r border-border px-4 py-3">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted">
+                    Routes
+                  </p>
+
+                  <p className="mt-1 text-lg font-bold text-text">
+                    24
+                  </p>
+                </div>
+
+                <div className="px-4 py-3">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted">
+                    Fleet
+                  </p>
+
+                  <p className="mt-1 text-lg font-bold text-text">
+                    42
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <div className="space-y-8 pb-12">
+          <div className="space-y-5 pb-10 sm:space-y-6">
             <OverviewStats />
 
             <OperationalStats />
 
-            <div className="grid items-start gap-6 xl:grid-cols-[1.35fr_0.85fr]">
+            <div className="grid items-start gap-5 xl:grid-cols-[1.35fr_0.85fr]">
               <RouteStatistics />
 
               <VehicleStatistics />

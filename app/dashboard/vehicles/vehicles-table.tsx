@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react"
 import {
-  ChevronDown,
   Eye,
   MoreHorizontal,
   Pencil,
@@ -10,7 +9,7 @@ import {
   Trash2,
   Truck,
 } from "lucide-react"
-import { DashboardVehicle } from "../dashboard-data"
+import type { DashboardVehicle } from "../dashboard-data"
 
 type VehiclesTableProps = {
   vehicles: DashboardVehicle[]
@@ -31,10 +30,23 @@ function getStatusStyle(status: DashboardVehicle["status"]) {
       return "bg-emerald-50 text-emerald-700"
 
     case "Assigned":
-      return "bg-blue-50 text-blue-700"
+      return "bg-primary-light text-primary-dark"
 
     case "Maintenance":
       return "bg-amber-50 text-amber-700"
+  }
+}
+
+function getStatusDot(status: DashboardVehicle["status"]) {
+  switch (status) {
+    case "Available":
+      return "bg-emerald-600"
+
+    case "Assigned":
+      return "bg-primary"
+
+    case "Maintenance":
+      return "bg-amber-500"
   }
 }
 
@@ -48,14 +60,33 @@ export default function VehiclesTable({
   const [filter, setFilter] = useState<VehicleFilter>("All")
   const [openMenu, setOpenMenu] = useState<string | null>(null)
 
+  const counts = useMemo(
+    () => ({
+      All: vehicles.length,
+      Available: vehicles.filter(
+        (vehicle) => vehicle.status === "Available",
+      ).length,
+      Assigned: vehicles.filter(
+        (vehicle) => vehicle.status === "Assigned",
+      ).length,
+      Maintenance: vehicles.filter(
+        (vehicle) => vehicle.status === "Maintenance",
+      ).length,
+    }),
+    [vehicles],
+  )
+
   const filteredVehicles = useMemo(() => {
     const searchValue = search.trim().toLowerCase()
 
     return vehicles.filter((vehicle) => {
       const matchesSearch =
+        !searchValue ||
         vehicle.make.toLowerCase().includes(searchValue) ||
         vehicle.model.toLowerCase().includes(searchValue) ||
-        vehicle.registrationNumber.toLowerCase().includes(searchValue) ||
+        vehicle.registrationNumber
+          .toLowerCase()
+          .includes(searchValue) ||
         vehicle.type.toLowerCase().includes(searchValue)
 
       const matchesFilter =
@@ -73,97 +104,156 @@ export default function VehiclesTable({
   ]
 
   return (
-    <section className="border border-border bg-foreground">
-      <div className="flex flex-col gap-4 border-b border-border p-5 sm:p-6">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
-            <h2 className="text-base font-bold text-text">
-              Vehicle inventory
-            </h2>
+    <section className="border border-border bg-foreground shadow-[0_12px_35px_-30px_rgba(15,23,42,0.45)]">
+      <div className="border-b border-border">
+        <div className="flex flex-col gap-5 p-5 sm:p-6 lg:px-7 lg:py-6">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div>
+              <div className="flex items-center gap-2">
+                <Truck
+                  className="h-4 w-4 text-primary"
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                />
 
-            <p className="mt-1 text-xs text-muted">
-              View and manage all vehicles in your fleet.
-            </p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                  Vehicle inventory
+                </p>
+              </div>
+
+              <h2 className="mt-1.5 text-lg font-bold tracking-tight text-text">
+                All vehicles
+              </h2>
+
+              <p className="mt-1 text-xs leading-5 text-muted">
+                Search, filter, inspect, and manage your fleet.
+              </p>
+            </div>
+
+            <div className="border border-border bg-background px-3 py-2">
+              <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted">
+                Showing
+              </p>
+
+              <p className="mt-0.5 text-xs font-bold text-text">
+                {filteredVehicles.length} of {vehicles.length}
+              </p>
+            </div>
           </div>
 
-          <span className="text-xs font-medium text-muted">
-            {filteredVehicles.length} of {vehicles.length} vehicles
-          </span>
-        </div>
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="relative w-full xl:max-w-md">
+              <Search
+                className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+                aria-hidden="true"
+              />
 
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="relative w-full md:max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+              <input
+                type="search"
+                value={search}
+                onChange={(event) =>
+                  setSearch(event.target.value)
+                }
+                placeholder="Search by vehicle, registration, or type..."
+                aria-label="Search vehicles"
+                className="h-11 w-full border border-border bg-background pl-10 pr-4 text-sm text-text outline-none transition-colors placeholder:text-muted focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </div>
 
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search vehicles..."
-              className="h-11 w-full border border-border bg-background pl-10 pr-4 text-sm text-text outline-none transition-colors placeholder:text-muted focus:border-primary"
-            />
-          </div>
+            <div
+              className="flex max-w-full overflow-x-auto border-b border-border"
+              role="tablist"
+              aria-label="Vehicle status filters"
+            >
+              {filters.map((item) => {
+                const active = filter === item
 
-          <div className="flex gap-1 overflow-x-auto border-b border-border">
-            {filters.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setFilter(item)}
-                className={`shrink-0 border-b-2 px-3 py-3 text-xs font-semibold transition-colors ${
-                  filter === item
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted hover:text-text"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setFilter(item)}
+                    className={`flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-xs font-semibold transition-colors ${
+                      active
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted hover:text-text"
+                    }`}
+                  >
+                    {item}
+
+                    <span
+                      className={`min-w-5 px-1 text-center text-[9px] ${
+                        active
+                          ? "bg-primary-light text-primary-dark"
+                          : "bg-secondary text-muted"
+                      }`}
+                    >
+                      {counts[item]}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>
 
       {filteredVehicles.length === 0 ? (
-        <div className="flex flex-col items-center justify-center px-5 py-16 text-center">
+        <div className="flex min-h-[280px] flex-col items-center justify-center px-5 py-16 text-center">
           <div className="flex h-12 w-12 items-center justify-center bg-secondary text-muted">
             <Truck className="h-5 w-5" />
           </div>
 
-          <h3 className="mt-4 text-sm font-semibold text-text">
+          <h3 className="mt-4 text-sm font-bold text-text">
             No vehicles found
           </h3>
 
           <p className="mt-1 max-w-sm text-xs leading-6 text-muted">
-            Try changing your search or status filter to find a vehicle.
+            No vehicles match your current search or status filter.
           </p>
+
+          {search || filter !== "All" ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("")
+                setFilter("All")
+              }}
+              className="mt-4 min-h-10 border border-border px-4 text-xs font-semibold text-text transition-colors hover:bg-secondary"
+            >
+              Clear filters
+            </button>
+          ) : null}
         </div>
       ) : (
         <>
           <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-[760px] text-left">
+            <table className="w-full min-w-[850px] text-left">
               <thead>
                 <tr className="border-b border-border bg-background">
-                  <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                  <th className="px-5 py-3.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted lg:px-6">
                     Vehicle
                   </th>
 
-                  <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                  <th className="px-5 py-3.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted">
                     Registration
                   </th>
 
-                  <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                  <th className="px-5 py-3.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted">
                     Type
                   </th>
 
-                  <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                  <th className="px-5 py-3.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted">
                     Capacity
                   </th>
 
-                  <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                  <th className="px-5 py-3.5 text-[9px] font-bold uppercase tracking-[0.14em] text-muted">
                     Status
                   </th>
 
-                  <th className="px-6 py-4 text-right text-[10px] font-semibold uppercase tracking-wider text-muted">
+                  <th className="px-5 py-3.5 text-right text-[9px] font-bold uppercase tracking-[0.14em] text-muted lg:px-6">
                     Actions
                   </th>
                 </tr>
@@ -173,100 +263,129 @@ export default function VehiclesTable({
                 {filteredVehicles.map((vehicle) => (
                   <tr
                     key={vehicle.id}
-                    className="border-b border-border last:border-0 transition-colors hover:bg-background/70"
+                    className="border-b border-border last:border-0 transition-colors hover:bg-background"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4 lg:px-6">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-secondary text-muted">
-                          <Truck className="h-5 w-5" />
-                        </div>
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-secondary text-muted">
+                          <Truck
+                            className="h-5 w-5"
+                            strokeWidth={1.7}
+                          />
+                        </span>
 
-                        <div>
-                          <p className="text-sm font-semibold text-text">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-text">
                             {vehicle.make} {vehicle.model}
                           </p>
 
-                          <p className="mt-1 text-xs text-muted">
-                            {vehicle.type}
+                          <p className="mt-1 truncate text-[10px] text-muted">
+                            ID · {vehicle.id.slice(0, 8)}
                           </p>
                         </div>
                       </div>
                     </td>
 
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-medium text-text">
+                    <td className="px-5 py-4">
+                      <span className="font-mono text-xs font-semibold text-text">
                         {vehicle.registrationNumber}
                       </span>
                     </td>
 
-                    <td className="px-6 py-4 text-sm text-muted">
-                      {vehicle.type}
+                    <td className="px-5 py-4">
+                      <span className="text-xs text-muted">
+                        {vehicle.type}
+                      </span>
                     </td>
 
-                    <td className="px-6 py-4 text-sm text-text">
-                      {vehicle.passengerCapacity} passengers
+                    <td className="px-5 py-4">
+                      <span className="text-xs font-semibold text-text">
+                        {vehicle.passengerCapacity}
+                      </span>
+
+                      <span className="ml-1 text-[10px] text-muted">
+                        passengers
+                      </span>
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <span
-                        className={`inline-flex px-2.5 py-1 text-[10px] font-semibold ${getStatusStyle(vehicle.status)}`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${getStatusStyle(vehicle.status)}`}
                       >
+                        <span
+                          className={`h-1.5 w-1.5 ${getStatusDot(vehicle.status)}`}
+                        />
+
                         {vehicle.status}
                       </span>
                     </td>
 
-                    <td className="relative px-6 py-4 text-right">
+                    <td className="relative px-5 py-4 text-right lg:px-6">
                       <button
                         type="button"
+                        aria-label={`Actions for ${vehicle.registrationNumber}`}
+                        aria-expanded={openMenu === vehicle.id}
                         onClick={() =>
                           setOpenMenu(
-                            openMenu === vehicle.id ? null : vehicle.id,
+                            openMenu === vehicle.id
+                              ? null
+                              : vehicle.id,
                           )
                         }
-                        className="inline-flex h-9 w-9 items-center justify-center text-muted transition-colors hover:bg-secondary hover:text-text"
-                        aria-label={`Actions for ${vehicle.registrationNumber}`}
+                        className="inline-flex h-9 w-9 items-center justify-center text-muted transition-colors hover:bg-secondary hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <MoreHorizontal className="h-5 w-5" />
                       </button>
 
                       {openMenu === vehicle.id && (
-                        <div className="absolute right-8 top-12 z-20 w-40 border border-border bg-foreground py-1 text-left shadow-lg">
+                        <>
                           <button
                             type="button"
-                            onClick={() => {
-                              onView(vehicle)
-                              setOpenMenu(null)
-                            }}
-                            className="flex w-full items-center gap-2 px-3 py-2.5 text-xs text-text hover:bg-secondary"
-                          >
-                            <Eye className="h-4 w-4" />
-                            View details
-                          </button>
+                            aria-label="Close vehicle actions"
+                            onClick={() => setOpenMenu(null)}
+                            className="fixed inset-0 z-10 cursor-default"
+                          />
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onEdit(vehicle)
-                              setOpenMenu(null)
-                            }}
-                            className="flex w-full items-center gap-2 px-3 py-2.5 text-xs text-text hover:bg-secondary"
-                          >
-                            <Pencil className="h-4 w-4" />
-                            Edit vehicle
-                          </button>
+                          <div className="absolute right-6 top-12 z-20 w-44 border border-border bg-foreground py-1 text-left shadow-[0_15px_40px_-15px_rgba(15,23,42,0.35)]">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenMenu(null)
+                                onView(vehicle)
+                              }}
+                              className="flex min-h-10 w-full items-center gap-2 px-3 text-xs font-medium text-text hover:bg-background"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              View details
+                            </button>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onDelete(vehicle.id)
-                              setOpenMenu(null)
-                            }}
-                            className="flex w-full items-center gap-2 px-3 py-2.5 text-xs text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Delete vehicle
-                          </button>
-                        </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenMenu(null)
+                                onEdit(vehicle)
+                              }}
+                              className="flex min-h-10 w-full items-center gap-2 px-3 text-xs font-medium text-text hover:bg-background"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              Edit vehicle
+                            </button>
+
+                            <div className="my-1 border-t border-border" />
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenMenu(null)
+                                onDelete(vehicle.id)
+                              }}
+                              className="flex min-h-10 w-full items-center gap-2 px-3 text-xs font-medium text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Delete vehicle
+                            </button>
+                          </div>
+                        </>
                       )}
                     </td>
                   </tr>
@@ -277,58 +396,65 @@ export default function VehiclesTable({
 
           <div className="divide-y divide-border md:hidden">
             {filteredVehicles.map((vehicle) => (
-              <article key={vehicle.id} className="p-4">
+              <article
+                key={vehicle.id}
+                className="p-4 transition-colors hover:bg-background"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-secondary text-muted">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-secondary text-muted">
                       <Truck className="h-5 w-5" />
-                    </div>
+                    </span>
 
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-text">
+                      <p className="truncate text-sm font-bold text-text">
                         {vehicle.make} {vehicle.model}
                       </p>
 
-                      <p className="mt-1 text-xs text-muted">
+                      <p className="mt-1 font-mono text-[10px] text-muted">
                         {vehicle.registrationNumber}
                       </p>
                     </div>
                   </div>
 
                   <span
-                    className={`shrink-0 px-2.5 py-1 text-[10px] font-semibold ${getStatusStyle(vehicle.status)}`}
+                    className={`shrink-0 inline-flex items-center gap-1.5 px-2 py-1 text-[9px] font-bold uppercase tracking-wide ${getStatusStyle(vehicle.status)}`}
                   >
+                    <span
+                      className={`h-1.5 w-1.5 ${getStatusDot(vehicle.status)}`}
+                    />
+
                     {vehicle.status}
                   </span>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border pt-3">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted">
-                      Vehicle type
+                <div className="mt-5 grid grid-cols-2 border-y border-border">
+                  <div className="border-r border-border px-3 py-3">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted">
+                      Type
                     </p>
 
-                    <p className="mt-1 text-xs font-medium text-text">
+                    <p className="mt-1 text-xs font-semibold text-text">
                       {vehicle.type}
                     </p>
                   </div>
 
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-muted">
+                  <div className="px-3 py-3">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted">
                       Capacity
                     </p>
 
-                    <p className="mt-1 text-xs font-medium text-text">
+                    <p className="mt-1 text-xs font-semibold text-text">
                       {vehicle.passengerCapacity} passengers
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 flex gap-2">
                   <button
                     type="button"
                     onClick={() => onView(vehicle)}
-                    className="inline-flex min-h-9 items-center gap-2 border border-border px-3 text-xs font-semibold text-text hover:bg-secondary"
+                    className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 border border-border px-3 text-xs font-semibold text-text transition-colors hover:bg-secondary"
                   >
                     <Eye className="h-3.5 w-3.5" />
                     View
@@ -337,7 +463,7 @@ export default function VehiclesTable({
                   <button
                     type="button"
                     onClick={() => onEdit(vehicle)}
-                    className="inline-flex min-h-9 items-center gap-2 border border-border px-3 text-xs font-semibold text-text hover:bg-secondary"
+                    className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 border border-border px-3 text-xs font-semibold text-text transition-colors hover:bg-secondary"
                   >
                     <Pencil className="h-3.5 w-3.5" />
                     Edit
@@ -345,11 +471,11 @@ export default function VehiclesTable({
 
                   <button
                     type="button"
+                    aria-label={`Delete ${vehicle.registrationNumber}`}
                     onClick={() => onDelete(vehicle.id)}
-                    className="inline-flex min-h-9 items-center gap-2 border border-border px-3 text-xs font-semibold text-red-600 hover:bg-red-50"
+                    className="inline-flex min-h-10 w-10 items-center justify-center border border-border text-red-600 transition-colors hover:bg-red-50"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                    Delete
                   </button>
                 </div>
               </article>
@@ -357,6 +483,12 @@ export default function VehiclesTable({
           </div>
         </>
       )}
+
+      <div className="border-t border-border bg-background px-5 py-3 sm:px-6">
+        <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted">
+          Showing {filteredVehicles.length} of {vehicles.length} vehicles
+        </p>
+      </div>
     </section>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Sidebar from "@/app/components/organizationSidebar"
+import DashboardBackground from "../dashboard-background"
 import {
   DashboardVehicle,
   saveDashboardRoutes,
@@ -9,50 +10,65 @@ import {
   useDashboardRoutes,
   useDashboardVehicles,
 } from "../dashboard-data"
-import FleetOverview from "./fleet-overview"
 import VehicleHeader from "./vehicle-header"
-import VehicleDialog from "./vehicle-dialog"
-import VehiclesDetails from "./vehicles-details"
+import FleetOverview from "./fleet-overview"
 import VehiclesTable from "./vehicles-table"
+import VehicleDialog from "./vehicle-dialog"
+import VehicleDetails from "./vehicles-details"
+
+type VehicleDialogState = {
+  open: boolean
+  vehicle: DashboardVehicle | null
+}
 
 export default function VehiclesPage() {
   const vehicles = useDashboardVehicles()
   const routes = useDashboardRoutes()
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [detailsOpen, setDetailsOpen] = useState(false)
-  const [selectedVehicle, setSelectedVehicle] =
+  const [organizationName] = useState("GIG LOGISTICS")
+
+  const [dialog, setDialog] = useState<VehicleDialogState>({
+    open: false,
+    vehicle: null,
+  })
+
+  const [detailsVehicle, setDetailsVehicle] =
     useState<DashboardVehicle | null>(null)
 
-  const handleAddVehicle = () => {
-    setSelectedVehicle(null)
-    setDialogOpen(true)
+  const openAddVehicle = () => {
+    setDialog({
+      open: true,
+      vehicle: null,
+    })
   }
 
-  const handleEditVehicle = (vehicle: DashboardVehicle) => {
-    setSelectedVehicle(vehicle)
-    setDialogOpen(true)
+  const openEditVehicle = (vehicle: DashboardVehicle) => {
+    setDialog({
+      open: true,
+      vehicle,
+    })
   }
 
-  const handleViewVehicle = (vehicle: DashboardVehicle) => {
-    setSelectedVehicle(vehicle)
-    setDetailsOpen(true)
+  const closeDialog = () => {
+    setDialog({
+      open: false,
+      vehicle: null,
+    })
   }
 
   const handleSaveVehicle = (vehicle: DashboardVehicle) => {
-    const vehicleExists = vehicles.some(
+    const existingVehicle = vehicles.some(
       (item) => item.id === vehicle.id,
     )
 
-    const updatedVehicles = vehicleExists
+    const nextVehicles = existingVehicle
       ? vehicles.map((item) =>
           item.id === vehicle.id ? vehicle : item,
         )
-      : [vehicle, ...vehicles]
+      : [...vehicles, vehicle]
 
-    saveDashboardVehicles(updatedVehicles)
-    setDialogOpen(false)
-    setSelectedVehicle(null)
+    saveDashboardVehicles(nextVehicles)
+    closeDialog()
   }
 
   const handleDeleteVehicle = (vehicleId: string) => {
@@ -64,41 +80,45 @@ export default function VehiclesPage() {
       return
     }
 
-    const updatedVehicles = vehicles.filter(
+    const nextVehicles = vehicles.filter(
       (vehicle) => vehicle.id !== vehicleId,
     )
 
-    const updatedRoutes = routes.map((route) => ({
+    const nextRoutes = routes.map((route) => ({
       ...route,
       assignedVehicleIds: route.assignedVehicleIds.filter(
         (id) => id !== vehicleId,
       ),
     }))
 
-    saveDashboardVehicles(updatedVehicles)
-    saveDashboardRoutes(updatedRoutes)
+    saveDashboardVehicles(nextVehicles)
+    saveDashboardRoutes(nextRoutes)
 
-    if (selectedVehicle?.id === vehicleId) {
-      setSelectedVehicle(null)
-      setDetailsOpen(false)
+    if (detailsVehicle?.id === vehicleId) {
+      setDetailsVehicle(null)
     }
   }
 
   return (
-    <main>
-      <Sidebar />
+    <main className="min-h-screen bg-background">
+      <Sidebar organizationName={organizationName} />
 
-      <div className="min-h-screen bg-secondary lg:ml-[260px]">
-        <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6 sm:py-7 lg:px-9">
-          <VehicleHeader onAddVehicle={handleAddVehicle} />
+      <div className="relative min-h-screen overflow-hidden lg:ml-[260px]">
+        <DashboardBackground />
 
-          <div className="space-y-8 pb-12">
+        <div className="relative mx-auto w-full max-w-[1560px] px-3 py-3 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+          <div className="space-y-5 sm:space-y-6">
+            <VehicleHeader
+              vehicleCount={vehicles.length}
+              onAddVehicle={openAddVehicle}
+            />
+
             <FleetOverview vehicles={vehicles} />
 
             <VehiclesTable
               vehicles={vehicles}
-              onView={handleViewVehicle}
-              onEdit={handleEditVehicle}
+              onView={setDetailsVehicle}
+              onEdit={openEditVehicle}
               onDelete={handleDeleteVehicle}
             />
           </div>
@@ -106,30 +126,18 @@ export default function VehiclesPage() {
       </div>
 
       <VehicleDialog
-        key={`${dialogOpen ? "open" : "closed"}-${selectedVehicle?.id ?? "new"}`}
-        open={dialogOpen}
-        vehicle={selectedVehicle}
-        onClose={() => {
-          setDialogOpen(false)
-          setSelectedVehicle(null)
-        }}
+        open={dialog.open}
+        vehicle={dialog.vehicle}
+        onClose={closeDialog}
         onSave={handleSaveVehicle}
       />
 
-      <VehiclesDetails
-        open={detailsOpen}
-        vehicle={selectedVehicle}
-        onClose={() => {
-          setDetailsOpen(false)
-          setSelectedVehicle(null)
-        }}
-        onEdit={() => {
-          if (!selectedVehicle) {
-            return
-          }
-
-          setDetailsOpen(false)
-          setDialogOpen(true)
+      <VehicleDetails
+        vehicle={detailsVehicle}
+        onClose={() => setDetailsVehicle(null)}
+        onEdit={(vehicle) => {
+          setDetailsVehicle(null)
+          openEditVehicle(vehicle)
         }}
       />
     </main>

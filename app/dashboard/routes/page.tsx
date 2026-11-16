@@ -74,8 +74,8 @@ export default function RoutesPage() {
     <div className="min-h-screen bg-background">
       <Sidebar />
 
-      <main className="min-w-0 px-4 py-6 sm:px-6 lg:ml-[260px] lg:px-8 lg:py-8">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6">
+      <main className="min-w-0 px-4 py-5 sm:px-6 sm:py-6 lg:ml-[260px] lg:px-8 lg:py-8">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 motion-safe:animate-[route-page-in_400ms_ease-out]">
           <RouteHeader onAddRoute={handleAddRoute} />
 
           <RouteOverview routes={routes} />
@@ -91,6 +91,7 @@ export default function RoutesPage() {
       </main>
 
       <RouteDialog
+        key={dialogOpen ? (selectedRoute?.id ?? "new") : "closed"}
         open={dialogOpen}
         route={selectedRoute}
         vehicles={vehicles}
@@ -106,6 +107,29 @@ export default function RoutesPage() {
         vehicles={vehicles}
         onClose={() => setDetailsRoute(null)}
       />
+
+      <style jsx global>{`
+        @keyframes route-page-in {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            scroll-behavior: auto !important;
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }
