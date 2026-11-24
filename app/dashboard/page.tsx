@@ -12,6 +12,8 @@ import RouteStatistics from "./route-statistics"
 import VehicleStatistics from "./vehicle-statistics"
 import RecentActivities from "./recent-activities"
 
+type Role = "owner" | "admin" | "manager" | "staff"
+
 type Organization = {
   id: string
   name: string
@@ -20,6 +22,7 @@ type Organization = {
 
 type OrganizationMember = {
   organization_id: string
+  role: Role
 }
 
 export default function DashboardPage() {
@@ -27,6 +30,8 @@ export default function DashboardPage() {
 
   const [organization, setOrganization] =
     useState<Organization | null>(null)
+
+  const [role, setRole] = useState<Role | null>(null)
 
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState("")
@@ -49,7 +54,7 @@ export default function DashboardPage() {
       const { data: memberships, error: membershipsError } =
         await supabase
           .from("organization_members")
-          .select("organization_id")
+          .select("organization_id, role")
           .eq("user_id", user.id)
 
       if (membershipsError) {
@@ -65,6 +70,8 @@ export default function DashboardPage() {
 
       const membership =
         memberships[0] as OrganizationMember
+
+      setRole(membership.role)
 
       const { data, error } = await supabase
         .from("organizations")
@@ -137,7 +144,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (!organization) {
+  if (!organization || !role) {
     return null
   }
 
@@ -151,6 +158,7 @@ export default function DashboardPage() {
         <div className="relative mx-auto w-full max-w-[1560px] px-3 py-3 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
           <DashboardHeader
             organizationName={organization.name}
+            role={role}
           />
 
           <section className="py-7 sm:py-9">

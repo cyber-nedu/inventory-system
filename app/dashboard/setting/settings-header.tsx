@@ -2,229 +2,260 @@
 
 import {
   ChevronDown,
-  LogOut,
-  Settings2,
+  Loader2,
   UserRound,
-  UsersRound,
 } from "lucide-react"
 import type { User } from "@supabase/supabase-js"
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
-
-type Role = "owner" | "admin" | "manager" | "staff"
-
-type Organization = {
-  id: string
-  name: string
-  owner_id: string
-}
+import {
+  getAvatarUrl,
+} from "./profile/profile-utils"
+import type { ProfileRole } from "./profile/profile-types"
+import type { SettingsWorkspace } from "./_shared/use-settings-data"
 
 type SettingsHeaderProps = {
   user: User
-  organization: Organization
-  role: Role
+  organization: {
+    id: string
+    name: string
+  }
+  role: ProfileRole
   workspaceCount: number
+  workspaces: SettingsWorkspace[]
 }
 
-function getDisplayName(user: User) {
-  const fullName =
-    typeof user.user_metadata?.full_name === "string"
-      ? user.user_metadata.full_name.trim()
-      : ""
+function getWorkspaceInitials(name: string): string {
+  const words = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
 
-  if (fullName) {
-    return fullName
+  if (words.length === 0) {
+    return "K"
   }
 
-  if (user.email) {
-    return user.email.split("@")[0]
+  if (words.length === 1) {
+    return words[0].slice(0, 2).toUpperCase()
   }
 
-  return "User"
+  return `${words[0][0]}${words[1][0]}`.toUpperCase()
 }
 
-function getInitials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
+function storeActiveWorkspaceId(id: string): void {
+  window.localStorage.setItem(
+    "kyyp-active-workspace",
+    id,
+  )
 
-  if (parts.length === 0) {
-    return "U"
-  }
+  window.localStorage.setItem(
+    "active-workspace-id",
+    id,
+  )
 
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase()
-  }
-
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+  window.localStorage.setItem(
+    "activeWorkspaceId",
+    id,
+  )
 }
 
 export default function SettingsHeader({
   user,
   organization,
-  role,
-  workspaceCount,
+  workspaces,
 }: SettingsHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [switchingId, setSwitchingId] = useState<string | null>(
+    null,
+  )
+  const [switchError, setSwitchError] = useState<string | null>(
+    null,
+  )
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const displayName = getDisplayName(user)
-  const initials = getInitials(displayName)
+  const avatarUrl = getAvatarUrl(user)
+  const initials = getWorkspaceInitials(organization.name)
+
+  const otherWorkspaces = workspaces.filter(
+    (workspace) => workspace.id !== organization.id,
+  )
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
         setMenuOpen(false)
       }
     }
 
     document.addEventListener("mousedown", handlePointerDown)
-    document.addEventListener("keydown", handleEscape)
 
     return () => {
-      document.removeEventListener("mousedown", handlePointerDown)
-      document.removeEventListener("keydown", handleEscape)
+      document.removeEventListener(
+        "mousedown",
+        handlePointerDown,
+      )
     }
   }, [])
 
-  async function handleSignOut() {
-    const { createClient } = await import("@/app/lib/supabase/client")
-    const supabase = createClient()
+  function switchWorkspace(id: string) {
+    setSwitchError(null)
+    setSwitchingId(id)
 
-    await supabase.auth.signOut()
-    window.location.href = "/login"
+    try {
+      storeActiveWorkspaceId(id)
+      window.location.assign("/dashboard")
+    } catch {
+      setSwitchingId(null)
+      setSwitchError(
+        "We couldn't switch workspace. Please try again.",
+      )
+    }
   }
 
   return (
-    <header className="border-b border-border bg-foreground">
-      <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6 lg:px-8">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="mb-2 flex items-center gap-2">
-              <span className="h-1.5 w-1.5 bg-primary" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                KYYP Control Center
-              </span>
-            </div>
-
-            <h1 className="text-2xl font-bold tracking-[-0.035em] text-text sm:text-3xl">
-              Manage your workspace
-            </h1>
-
-            <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted">
-              Configure your workspace, access, interface preferences, and
-              everyday KYYP experience.
-            </p>
+    <header className="border-b border-border bg-background">
+      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-5 sm:px-6 sm:py-6">
+        <div className="min-w-0">
+          <div className="mb-1 text-xs text-muted">
+            Dashboard / Setting
           </div>
 
-          <div className="relative shrink-0" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((current) => !current)}
-              aria-expanded={menuOpen}
-              aria-haspopup="menu"
-              aria-label="Open account menu"
-              className="flex h-11 items-center gap-2 border border-border bg-background px-2.5 text-text transition hover:border-primary/40 hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          <h1 className="text-2xl font-semibold tracking-tight text-text sm:text-3xl">
+            Settings
+          </h1>
+
+          <p className="mt-1 text-sm text-muted">
+            Manage your workspace and how KYYP works for you.
+          </p>
+        </div>
+
+        <div ref={menuRef} className="relative shrink-0">
+          <button
+            type="button"
+            aria-expanded={menuOpen}
+            aria-haspopup="menu"
+            aria-label="Open workspace menu"
+            onClick={() => setMenuOpen((value) => !value)}
+            className="flex items-center gap-2 rounded-xl border border-border bg-foreground p-1.5 transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-secondary text-xs font-semibold text-muted">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={`${organization.name} profile`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                initials
+              )}
+            </span>
+
+            <span className="hidden max-w-32 truncate text-sm font-medium text-text sm:block">
+              {organization.name}
+            </span>
+
+            <ChevronDown className="mr-1 h-4 w-4 text-muted" />
+          </button>
+
+          {menuOpen ? (
+            <div
+              role="menu"
+              className="absolute right-0 top-full z-40 mt-2 w-72 overflow-hidden rounded-2xl border border-border bg-foreground shadow-xl"
             >
-              <span className="flex size-8 items-center justify-center bg-primary text-xs font-bold text-white">
-                {initials}
-              </span>
+              <div className="flex items-center gap-3 border-b border-border p-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-xs font-semibold text-muted">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={`${organization.name} profile`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    initials
+                  )}
+                </span>
 
-              <span className="hidden max-w-[150px] truncate text-sm font-semibold sm:block">
-                {displayName}
-              </span>
-
-              <ChevronDown
-                className={`size-4 text-muted transition-transform ${
-                  menuOpen ? "rotate-180" : ""
-                }`}
-                aria-hidden="true"
-              />
-            </button>
-
-            {menuOpen ? (
-              <div
-                role="menu"
-                className="absolute right-0 z-50 mt-2 w-[260px] border border-border bg-foreground shadow-[0_14px_35px_rgba(15,23,42,0.12)]"
-              >
-                <div className="border-b border-border px-4 py-3">
+                <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-text">
-                    {displayName}
-                  </p>
-
-                  <p className="mt-0.5 truncate text-xs text-muted">
                     {organization.name}
                   </p>
 
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="border border-primary/20 bg-primary-light px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-primary">
-                      {role}
-                    </span>
-
-                    {workspaceCount > 1 ? (
-                      <span className="text-[11px] text-muted">
-                        {workspaceCount} workspaces
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-muted">
-                        1 workspace
-                      </span>
-                    )}
-                  </div>
+                  <p className="truncate text-xs text-muted">
+                    {user.email}
+                  </p>
                 </div>
+              </div>
 
-                <div className="p-1.5">
+              <div className="p-2">
+                <Link
+                  href="/dashboard/setting/profile"
+                  role="menuitem"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-text transition hover:bg-secondary"
+                >
+                  <UserRound className="h-4 w-4 text-muted" />
+                  Profile
+                </Link>
+
+                {workspaces.length === 1 ? (
                   <Link
-                    href="/dashboard/settings/profile"
+                    href="/workspace/create-workspace"
                     role="menuitem"
                     onClick={() => setMenuOpen(false)}
-                    className="flex min-h-10 items-center gap-3 px-3 text-sm font-medium text-text transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-text transition hover:bg-secondary"
                   >
-                    <UserRound className="size-4 text-muted" />
-                    Profile
+                    <span>Create new workspace</span>
                   </Link>
+                ) : null}
 
-                  <Link
-                    href="/dashboard/settings/account"
-                    role="menuitem"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex min-h-10 items-center gap-3 px-3 text-sm font-medium text-text transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <Settings2 className="size-4 text-muted" />
-                    Account
-                  </Link>
-
-                  <Link
-                    href="/dashboard/settings/session"
-                    role="menuitem"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex min-h-10 items-center gap-3 px-3 text-sm font-medium text-text transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <UsersRound className="size-4 text-muted" />
-                    {workspaceCount > 1
-                      ? "Switch workspace"
-                      : "Workspace session"}
-                  </Link>
-
-                  <div className="my-1.5 border-t border-border" />
-
+                {workspaces.length === 2 &&
+                otherWorkspaces[0] ? (
                   <button
                     type="button"
                     role="menuitem"
-                    onClick={handleSignOut}
-                    className="flex min-h-10 w-full items-center gap-3 px-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    disabled={switchingId !== null}
+                    onClick={() =>
+                      switchWorkspace(otherWorkspaces[0].id)
+                    }
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm text-text transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    <LogOut className="size-4" />
-                    Sign out
+                    <span>
+                      {switchingId === otherWorkspaces[0].id
+                        ? "Switching..."
+                        : `Switch to ${otherWorkspaces[0].name}`}
+                    </span>
+
+                    {switchingId === otherWorkspaces[0].id ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted" />
+                    ) : null}
                   </button>
-                </div>
+                ) : null}
+
+                {workspaces.length >= 3 ? (
+                  <Link
+                    href="/workspace"
+                    role="menuitem"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-text transition hover:bg-secondary"
+                  >
+                    <span>Switch workspace</span>
+                  </Link>
+                ) : null}
+
+                {switchError ? (
+                  <p
+                    role="alert"
+                    className="px-3 py-2 text-xs text-red-600"
+                  >
+                    {switchError}
+                  </p>
+                ) : null}
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </header>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 export type RouteStatus = "Active" | "Inactive"
 
-export type VehicleStatus =
+export type VehicleStatus = 
   | "Available"
   | "Assigned"
   | "Maintenance"
